@@ -1,24 +1,325 @@
-# Compiled class file
-*.class
+import java.util.ArrayList;
+import java.util.Scanner;
 
-# Log file
-*.log
+class Product {
+    private String name;
+    private double price;
+    private int quantity;
+    private String description;
 
-# BlueJ files
-*.ctxt
+    // Constructor
+    public Product(String name, double price, int quantity, String description) {
+        this.name = name;
+        this.price = price;
+        this.quantity = quantity;
+        this.description = description;
+    }
 
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
+    // Getter methods
+    public String getName() {
+        return name;
+    }
 
-# Package Files #
-*.jar
-*.war
-*.nar
-*.ear
-*.zip
-*.tar.gz
-*.rar
+    public double getPrice() {
+        return price;
+    }
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
-replay_pid*
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    // Setter method for quantity
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+}
+
+class User {
+    private int id;
+    private String name;
+    private double balance;
+    private ArrayList<Order> orders;
+
+    // Constructor
+    public User(int id, String name, double balance) {
+        this.id = id;
+        this.name = name;
+        this.balance = balance;
+        this.orders = new ArrayList<>();
+    }
+
+    // Getter methods
+    public int getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public double getBalance() {
+        return balance;
+    }
+
+    public ArrayList<Order> getOrders() {
+        return orders;
+    }
+
+    // Setter method for balance
+    public void setBalance(double balance) {
+        this.balance = balance;
+    }
+}
+
+class Order {
+    private int userId;
+    private String productName;
+    private int quantity;
+    private double totalSum;
+
+    // Constructor
+    public Order(int userId, String productName, int quantity, double totalSum) {
+        this.userId = userId;
+        this.productName = productName;
+        this.quantity = quantity;
+        this.totalSum = totalSum;
+    }
+
+    // Getter methods
+    public int getUserId() {
+        return userId;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public double getTotalSum() {
+        return totalSum;
+    }
+}
+
+class OnlineShop {
+    private ArrayList<User> users;
+    private ArrayList<Product> products;
+    private ArrayList<Order> orderHistory;
+
+    // Constructor
+    public OnlineShop() {
+        this.users = new ArrayList<>();
+        this.products = new ArrayList<>();
+        this.orderHistory = new ArrayList<>();
+    }
+
+    // Other methods for your online shop can be added here
+
+    public void showProductList() {
+        System.out.println("Product List:");
+        for (Product product : products) {
+            System.out.println(product.getName() + " - $" + product.getPrice() + " - Quantity: " + product.getQuantity());
+        }
+    }
+
+    public void addProduct(String name, double price, int quantity, String description) {
+        Product product = new Product(name, price, quantity, description);
+        products.add(product);
+        System.out.println("Product added successfully!");
+    }
+
+    public void addUser(int id, String name, double balance) {
+        User user = new User(id, name, balance);
+        users.add(user);
+        System.out.println("User added successfully!");
+    }
+
+    public void buyProduct(int userId, String productName, int quantity) {
+        // Find the user and product
+        User user = findUserById(userId);
+        Product product = findProductByName(productName);
+
+        if (user != null && product != null) {
+            // Check if the user has enough balance
+            double totalCost = product.getPrice() * quantity;
+            if (user.getBalance() >= totalCost && product.getQuantity() >= quantity) {
+                // Deduct balance from the user
+                user.setBalance(user.getBalance() - totalCost);
+
+                // Update product quantity
+                product.setQuantity(product.getQuantity() - quantity);
+
+                // Create an order and add it to the user's order list and order history
+                Order order = new Order(userId, productName, quantity, totalCost);
+                user.getOrders().add(order);
+                orderHistory.add(order);
+
+                System.out.println("Purchase successful!");
+            } else {
+                System.out.println("Insufficient balance or product quantity!");
+            }
+        } else {
+            System.out.println("User or product not found!");
+        }
+    }
+
+    public void returnProduct(int userId, String productName, int quantity) {
+        // Find the user and product
+        User user = findUserById(userId);
+        Product product = findProductByName(productName);
+
+        if (user != null && product != null) {
+            // Find the corresponding order
+            Order orderToRemove = null;
+            for (Order order : user.getOrders()) {
+                if (order.getProductName().equals(productName) && order.getQuantity() == quantity) {
+                    orderToRemove = order;
+                    break;
+                }
+            }
+
+            if (orderToRemove != null) {
+                // Refund the user's balance
+                user.setBalance(user.getBalance() + orderToRemove.getTotalSum());
+
+                // Increase the product quantity
+                product.setQuantity(product.getQuantity() + quantity);
+
+                // Remove the order from user's orders and order history
+                user.getOrders().remove(orderToRemove);
+                orderHistory.remove(orderToRemove);
+
+                System.out.println("Return successful!");
+            } else {
+                System.out.println("Order not found for return!");
+            }
+        } else {
+            System.out.println("User or product not found!");
+        }
+    }
+
+    public void showAllUsers() {
+        System.out.println("User List:");
+        for (User user : users) {
+            System.out.println("ID: " + user.getId() + " - Name: " + user.getName() + " - Balance: $" + user.getBalance());
+        }
+    }
+
+    public void showUserOrders(int userId) {
+        User user = findUserById(userId);
+        if (user != null) {
+            System.out.println("Orders for User " + user.getName() + ":");
+            for (Order order : user.getOrders()) {
+                System.out.println("Product: " + order.getProductName() + " - Quantity: " + order.getQuantity() + " - Total: $" + order.getTotalSum());
+            }
+        } else {
+            System.out.println("User not found!");
+        }
+    }
+
+    private User findUserById(int userId) {
+        for (User user : users) {
+            if (user.getId() == userId) {
+                return user;
+            }
+        }
+        return null;
+    }
+
+    private Product findProductByName(String productName) {
+        for (Product product : products) {
+            if (product.getName().equals(productName)) {
+                return product;
+            }
+        }
+        return null;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        OnlineShop onlineShop = new OnlineShop();
+        Scanner scanner = new Scanner(System.in);
+
+        int choice;
+        do {
+            System.out.println("\nHello! You have the following available functions:");
+            System.out.println("1) To show products list;");
+            System.out.println("2) To add a product;");
+            System.out.println("3) To add a new user;");
+            System.out.println("4) To buy product;");
+            System.out.println("5) To return a product;");
+            System.out.println("6) To show all users;");
+            System.out.println("7) To show the certain user’s orders.");
+            System.out.println("0) Exit");
+
+            System.out.print("Enter your choice: ");
+            choice = scanner.nextInt();
+
+            switch (choice) {
+                case 1:
+                    onlineShop.showProductList();
+                    break;
+                case 2:
+                    scanner.nextLine();
+                    System.out.print("Enter product name: ");
+                    String productName = scanner.nextLine();
+                    System.out.print("Enter product price: ");
+                    double productPrice = scanner.nextDouble();
+                    System.out.print("Enter product quantity: ");
+                    int productQuantity = scanner.nextInt();
+                    scanner.nextLine();
+                    System.out.print("Enter product description: ");
+                    String productDescription = scanner.nextLine();
+                    onlineShop.addProduct(productName, productPrice, productQuantity, productDescription);
+                    break;
+                case 3:
+                    System.out.print("Enter user ID: ");
+                    int userId = scanner.nextInt();
+                    System.out.print("Enter user name: ");
+                    String userName = scanner.next();
+                    System.out.print("Enter user balance: ");
+                    double userBalance = scanner.nextDouble();
+                    onlineShop.addUser(userId, userName, userBalance);
+                    break;
+                case 4:
+                    System.out.print("Enter user ID: ");
+                    int buyUserId = scanner.nextInt();
+                    System.out.print("Enter product name to buy: ");
+                    String buyProductName = scanner.next();
+                    System.out.print("Enter quantity to buy: ");
+                    int buyQuantity = scanner.nextInt();
+                    onlineShop.buyProduct(buyUserId, buyProductName, buyQuantity);
+                    break;
+                case 5:
+                    System.out.print("Enter user ID: ");
+                    int returnUserId = scanner.nextInt();
+                    System.out.print("Enter product name to return: ");
+                    String returnProductName = scanner.next();
+                    System.out.print("Enter quantity to return: ");
+                    int returnQuantity = scanner.nextInt();
+                    onlineShop.returnProduct(returnUserId, returnProductName, returnQuantity);
+                    break;
+                case 6:
+                    onlineShop.showAllUsers();
+                    break;
+                case 7:
+                    System.out.print("Enter user ID to show orders: ");
+                    int showOrdersUserId = scanner.nextInt();
+                    onlineShop.showUserOrders(showOrdersUserId);
+                    break;
+                case 0:
+                    System.out.println("Exiting the program. Goodbye!");
+                    break;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        } while (choice != 0);
+    }
+}
